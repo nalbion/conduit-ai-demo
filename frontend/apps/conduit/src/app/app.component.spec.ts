@@ -14,8 +14,7 @@ describe('AppComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [RouterTestingModule, StoreModule.forRoot({})],
-      declarations: [AppComponent, FooterComponent, NavbarComponent],
+      imports: [RouterTestingModule, StoreModule.forRoot({}), AppComponent, FooterComponent, NavbarComponent],
       providers: [LocalStorageJwtService, provideMockStore({})],
     }).compileComponents();
   }));
