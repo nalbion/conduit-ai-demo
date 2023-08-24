@@ -39,6 +39,7 @@ export class ArticleController {
 
   @ApiOperation({ summary: 'Create article' })
   @ApiResponse({ status: 201, description: 'The article has been successfully created.' })
+  @ApiResponse({ status: 400, description: 'Invalid input.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @Post()
   async create(@User('id') userId: number, @Body('article') articleData: CreateArticleDto) {
