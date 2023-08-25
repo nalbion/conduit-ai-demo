@@ -25,34 +25,6 @@ export class UserService {
 
   async getStatistics(): Promise<any[]> {
     return await this.userStatisticsRepository.findAll();
-//     const qb = this.userStatisticsRepository
-//           .createQueryBuilder('u')
-//             .select(['u.*',
-//                 // 'COUNT(a.id) as total_articles',
-//                 // 'SUM(a.favorites_count) as total_likes',
-//                 // 'MIN(a.created_at) as first_article_date',
-//             ])
-//           // .select(['u.*', 'u.id'])
-//           // .addSelect(['u.username'])
-//
-// // .addSelect(['a.favorites_count'])
-// //           .addSelect('COUNT(a.id) as total_articles')
-// //         .addSelect('SUM(a.favorites_count) as total_likes')
-// //         .addSelect('MIN(a.created_at) as first_article_date')
-//         //
-//
-//             // .leftJoin('u.articles', 'a') // , 'user.id = article.author_id')
-//         //   .leftJoinAndSelect('u.articles', 'a') // , 'user.id = article.author_id')
-//
-//
-//         // .leftJoin('a.author', 'a') // , 'user.id = article.author_id')
-//         // .count('article.id')
-//         // .groupBy(['id'])
-//         //     .groupBy(['u.id', 'u.username'])
-//         // .orderBy({ 'total_likes': QueryOrder.DESC })
-//     ;
-//
-//     return await qb.getResultList();
   }
 
   async findAll(): Promise<User[]> {

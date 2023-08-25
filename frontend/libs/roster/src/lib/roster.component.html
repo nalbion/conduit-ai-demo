@@ -1,0 +1,30 @@
+<div class="home-page">
+  <div class="banner">
+    <div class="container">
+      <h1 class="logo-font">Conduit Roster</h1>
+    </div>
+  </div>
+
+  <div class="container page">
+    <div class="row">
+      <table>
+        <thead>
+          <tr>
+            <th>User Name</th>
+            <th>Number of Articles</th>
+            <th>Likes Received</th>
+            <th>Date of First Article</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td><a [routerLink]="['/profile', user.username]">{{ user.username }}</a></td>
+            <td>{{ user.totalArticles }}</td>
+            <td>{{ user.totalLikes }}</td>
+            <td>{{ user.firstArticleDate || 'N/A' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

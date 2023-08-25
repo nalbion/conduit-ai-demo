@@ -9,3 +9,13 @@ export interface User {
 export interface UserResponse {
   user: User;
 }
+
+export interface UserStatistics {
+  userId: number;
+  username: string;
+  totalArticles: number;
+  totalLikes: number;
+  firstArticleDate: Date;
+}
+
+export type UserStatisticsResponse = UserStatistics[];

@@ -1,0 +1,24 @@
+{
+  "name": "roster",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/roster/src",
+  "prefix": "cdt",
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/roster"],
+      "options": {
+        "jestConfig": "libs/roster/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "options": {
+        "lintFilePatterns": ["libs/roster/src/**/*.ts", "libs/roster/src/**/*.html"]
+      }
+    }
+  },
+  "tags": []
+}
