@@ -37,7 +37,7 @@ describe('TagController', () => {
       tags.push(createTag(1, 'angularjs'));
       tags.push(createTag(2, 'reactjs'));
 
-      jest.spyOn(tagService, 'findAll').mockResolvedValue({ tags });
+      jest.spyOn(tagService, 'findAll').mockResolvedValue({ tags: tags as any });
 
       const findAllResult = await tagController.findAll();
       expect(findAllResult).toMatchObject({ tags });

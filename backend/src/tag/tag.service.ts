@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository } from '@mikro-orm/mysql';
 import { Tag } from './tag.entity';
 import { ITagsRO } from './tag.interface';
+
 
 @Injectable()
 export class TagService {

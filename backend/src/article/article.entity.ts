@@ -1,8 +1,19 @@
-import { ArrayType, Collection, Entity, EntityDTO, ManyToOne, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  EntityDTO,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  wrap
+} from '@mikro-orm/core';
 import slug from 'slug';
 
 import { User } from '../user/user.entity';
 import { Comment } from './comment.entity';
+import { Tag } from '../tag/tag.entity';
 
 @Entity()
 export class Article {
@@ -28,8 +39,8 @@ export class Article {
   @Property({ onUpdate: () => new Date() })
   updatedAt = new Date();
 
-  @Property({ type: ArrayType })
-  tagList: string[] = [];
+  @ManyToMany({ entity: () => Tag, owner: true, eager: true })
+  tags = new Collection<Tag>(this);
 
   @ManyToOne()
   author: User;
@@ -60,4 +71,5 @@ export class Article {
 
 export interface ArticleDTO extends EntityDTO<Article> {
   favorited?: boolean;
+  tagList?: string[];
 }

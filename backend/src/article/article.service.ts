@@ -1,13 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { EntityManager, QueryOrder, wrap } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs'
-import { EntityRepository } from '@mikro-orm/mysql';
+import {Injectable} from '@nestjs/common';
+import {EntityManager, QueryOrder, wrap} from '@mikro-orm/core';
+import {InjectRepository} from '@mikro-orm/nestjs'
+import {EntityRepository} from '@mikro-orm/mysql';
 
-import { User } from '../user/user.entity';
-import { Article } from './article.entity';
-import { IArticleRO, IArticlesRO, ICommentsRO } from './article.interface';
-import { Comment } from './comment.entity';
-import { CreateArticleDto, CreateCommentDto } from './dto';
+import {User} from '../user/user.entity';
+import {Article, ArticleDTO} from './article.entity';
+import {IArticleRO, IArticlesRO, ICommentsRO} from './article.interface';
+import {Comment} from './comment.entity';
+import {CreateArticleDto, CreateCommentDto} from './dto';
+import {Tag} from '../tag/tag.entity';
 
 @Injectable()
 export class ArticleService {
@@ -20,6 +21,8 @@ export class ArticleService {
     private readonly commentRepository: EntityRepository<Comment>,
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
+    @InjectRepository(Tag)
+    private readonly tagRepository: EntityRepository<Tag>,
   ) {}
 
   async findAll(userId: number, query: any): Promise<IArticlesRO> {
@@ -27,10 +30,18 @@ export class ArticleService {
     const qb = this.articleRepository
       .createQueryBuilder('a')
       .select('a.*')
-      .leftJoin('a.author', 'u');
+      .leftJoin('a.author', 'u')
+      .leftJoinAndSelect('a.tags', 't');
 
     if ('tag' in query) {
-      qb.andWhere({ tagList: new RegExp(query.tag) });
+      qb.andWhere(
+          `a.id IN (
+            SELECT article_id FROM article_tags WHERE tag_id IN (
+              SELECT id FROM tag WHERE tag = ?
+            )
+          )`,
+          [query.tag]
+      );
     }
 
     if ('author' in query) {
@@ -56,7 +67,7 @@ export class ArticleService {
 
     qb.orderBy({ createdAt: QueryOrder.DESC });
     const res = await qb.clone().count('id', true).execute('get');
-    const articlesCount = res.count;
+    const articlesCount = res ? res.count : 0;
 
     if ('limit' in query) {
       qb.limit(query.limit);
@@ -67,8 +78,18 @@ export class ArticleService {
     }
 
     const articles = await qb.getResult();
+    return { articles: articles.map(a => this.mapToDto(a, user)), articlesCount };
+  }
 
-    return { articles: articles.map(a => a.toJSON(user)), articlesCount };
+  // TODO: check when tagList needs to be loaded & mapped. Currently it seems that it is for GET /api/articles
+  private mapToDto(article: Article, user: User): ArticleDTO {
+    // replace tags with tagList
+    const { tags, ...rest } = article.toJSON(user);
+
+    return {
+      ...rest,
+      tagList: tags.map(t => t.tag),
+    } as ArticleDTO
   }
 
   async findFeed(userId: number, query): Promise<IArticlesRO> {
@@ -80,8 +101,9 @@ export class ArticleService {
       offset: query.offset,
     });
 
-    console.log('findFeed', { articles: res[0], articlesCount: res[1] });
-    return { articles: res[0].map(a => a.toJSON(user)), articlesCount: res[1] };
+    console.info('findFeed...');
+
+    return { articles: res[0].map(a => this.mapToDto(a, user)), articlesCount: res[1] };
   }
 
   async findOne(userId: number, where): Promise<IArticleRO> {
@@ -140,22 +162,31 @@ export class ArticleService {
 
   async findComments(slug: string): Promise<ICommentsRO> {
     const article = await this.articleRepository.findOne({ slug }, { populate: ['comments'] });
+    // TODO: tags for the articles for every comment are provided, as { id, tag }
     return { comments: article.comments.getItems() };
   }
 
   async create(userId: number, dto: CreateArticleDto) {
     const user = await this.userRepository.findOne({ id: userId }, { populate: ['followers', 'favorites', 'articles'] });
     const article = new Article(user, dto.title, dto.description, dto.body);
-    article.tagList.push(...dto.tagList);
+
+    // article.tagList.push(...dto.tagList);
+    article.tags.set(await this.updateTags(dto.tagList));
+
     user.articles.add(article);
     await this.em.flush();
 
-    return { article: article.toJSON(user) };
+    const articleDto = article.toJSON(user);
+    articleDto.tagList = dto.tagList;
+
+    return { article: articleDto };
   }
 
   async update(userId: number, slug: string, articleData: any): Promise<IArticleRO> {
     const user = await this.userRepository.findOne({ id: userId }, { populate: ['followers', 'favorites', 'articles'] });
     const article = await this.articleRepository.findOne({ slug }, { populate: ['author'] });
+
+    // TODO: do we need to call updateTags() here also?
     wrap(article).assign(articleData);
     await this.em.flush();
 
@@ -164,6 +195,21 @@ export class ArticleService {
 
   async delete(slug: string) {
     return this.articleRepository.nativeDelete({ slug });
+  }
+
+  private async updateTags(tagList: string[]) {
+    const tags = await this.tagRepository.find({ tag: { $in: tagList } });
+    const existingTags = tags.map(t => t.tag);
+    const newTags = tagList.filter(t => !existingTags.includes(t));
+    const newTagEntities = newTags.map(t => {
+      const tag = new Tag();
+      tag.tag = t;
+      return tag;
+    });
+
+    // await this.tagRepository.persistAndFlush(newTagEntities);
+
+    return [...tags, ...newTagEntities];
   }
 
 }

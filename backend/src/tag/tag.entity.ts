@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 @Entity()
 export class Tag {
@@ -7,6 +7,7 @@ export class Tag {
   id: number;
 
   @Property()
+  @Unique()
   tag: string;
 
 }
