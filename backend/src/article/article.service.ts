@@ -101,8 +101,6 @@ export class ArticleService {
       offset: query.offset,
     });
 
-    console.info('findFeed...');
-
     return { articles: res[0].map(a => this.mapToDto(a, user)), articlesCount: res[1] };
   }
 

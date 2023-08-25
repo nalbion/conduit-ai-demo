@@ -2,8 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ArticleController } from './article.controller';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto';
-import { User } from '../user/user.entity';
-import { Collection } from '@mikro-orm/core';
+
 
 describe('ArticleController', () => {
     let articleController: ArticleController;
@@ -53,7 +52,7 @@ describe('ArticleController', () => {
                     favoritesCount: 0,
                     author,
                     comments,
-                },
+                } as any,
             });
 
             const result = await articleController.create(userId, articleDto);
