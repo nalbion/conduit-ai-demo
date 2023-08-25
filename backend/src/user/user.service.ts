@@ -3,18 +3,57 @@ import { validate } from 'class-validator';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { EntityManager, wrap } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository } from '@mikro-orm/mysql';
 import { SECRET } from '../config';
 import { CreateUserDto, LoginUserDto, UpdateUserDto } from './dto';
 import { User } from './user.entity';
 import { IUserRO } from './user.interface';
 import { UserRepository } from './user.repository';
+import { UserStatistics } from './user-statistics.entity';
+
+
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
+    @InjectRepository(UserStatistics)
+    private readonly userStatisticsRepository: EntityRepository<UserStatistics>,
     private readonly em: EntityManager,
   ) {}
+
+  async getStatistics(): Promise<any[]> {
+    return await this.userStatisticsRepository.findAll();
+//     const qb = this.userStatisticsRepository
+//           .createQueryBuilder('u')
+//             .select(['u.*',
+//                 // 'COUNT(a.id) as total_articles',
+//                 // 'SUM(a.favorites_count) as total_likes',
+//                 // 'MIN(a.created_at) as first_article_date',
+//             ])
+//           // .select(['u.*', 'u.id'])
+//           // .addSelect(['u.username'])
+//
+// // .addSelect(['a.favorites_count'])
+// //           .addSelect('COUNT(a.id) as total_articles')
+// //         .addSelect('SUM(a.favorites_count) as total_likes')
+// //         .addSelect('MIN(a.created_at) as first_article_date')
+//         //
+//
+//             // .leftJoin('u.articles', 'a') // , 'user.id = article.author_id')
+//         //   .leftJoinAndSelect('u.articles', 'a') // , 'user.id = article.author_id')
+//
+//
+//         // .leftJoin('a.author', 'a') // , 'user.id = article.author_id')
+//         // .count('article.id')
+//         // .groupBy(['id'])
+//         //     .groupBy(['u.id', 'u.username'])
+//         // .orderBy({ 'total_likes': QueryOrder.DESC })
+//     ;
+//
+//     return await qb.getResultList();
+  }
 
   async findAll(): Promise<User[]> {
     return this.userRepository.findAll();
