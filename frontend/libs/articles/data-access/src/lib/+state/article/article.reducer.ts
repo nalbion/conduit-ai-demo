@@ -29,6 +29,8 @@ export const articleInitialState: ArticleState = {
       following: false,
       loading: false,
     },
+    authors: [],
+    authorEmails: [],
   },
   comments: [],
   loaded: false,

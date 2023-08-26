@@ -1,0 +1,8 @@
+.article-meta cdt-author-meta {
+    display: block;
+    margin-bottom: 16px;
+}
+
+.article-meta cdt-author-meta:last-child {
+    margin-bottom: 0;
+}

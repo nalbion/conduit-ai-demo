@@ -3,7 +3,7 @@
     <cdt-article-list-item
       data-e2e-id="article-list"
       (navigateToArticle)="navigateToArticle($event)"
-      (unFavorite)="unFavorite($event)"
+      (unfavorite)="unfavorite($event)"
       (favorite)="favorite($event)"
       *ngFor="let article of articles$ | async"
       [article]="article"

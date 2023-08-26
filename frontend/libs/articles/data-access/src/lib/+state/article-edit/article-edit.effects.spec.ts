@@ -10,74 +10,76 @@ import { articleEditActions } from './article-edit.actions';
 import { publishArticle$ } from './article-edit.effects';
 
 describe('ArticleEdit Effects', () => {
-    class ArticleEditEffects {
-        publishArticle$ = publishArticle$;
-    }
+  class ArticleEditEffects {
+    publishArticle$ = publishArticle$;
+  }
 
-    let effects: ArticleEditEffects;
-    let actions$: ReplaySubject<Action>;
-    let mockStore: MockStore;
-    let mockArticlesService: jest.Mocked<ArticlesService>;
-    let mockRouter: jest.Mocked<Router>;
+  let effects: ArticleEditEffects;
+  let actions$: ReplaySubject<Action>;
+  let mockStore: MockStore;
+  let mockArticlesService: jest.Mocked<ArticlesService>;
+  let mockRouter: jest.Mocked<Router>;
 
-    beforeEach(() => {
-        mockArticlesService = {
-            publishArticle: jest.fn(),
-        } as any;
+  beforeEach(() => {
+    mockArticlesService = {
+      publishArticle: jest.fn(),
+    } as any;
 
-        mockRouter = {
-            navigate: jest.fn()
-        } as any;
+    mockRouter = {
+      navigate: jest.fn(),
+    } as any;
 
-        TestBed.configureTestingModule({
-            providers: [
-                ArticleEditEffects,
-                provideMockActions(() => actions$),
-                provideMockStore(),
-                { provide: ArticlesService, useValue: mockArticlesService },
-                { provide: typeof publishArticle$, useClass: publishArticle$ },
-                { provide: Router, useValue: mockRouter }
-            ]
-        });
-
-        effects = TestBed.inject(ArticleEditEffects);
-        mockStore = TestBed.inject(MockStore);
-        actions$ = new ReplaySubject(1);
+    TestBed.configureTestingModule({
+      providers: [
+        ArticleEditEffects,
+        provideMockActions(() => actions$),
+        provideMockStore(),
+        { provide: ArticlesService, useValue: mockArticlesService },
+        { provide: typeof publishArticle$, useClass: publishArticle$ },
+        { provide: Router, useValue: mockRouter },
+      ],
     });
 
-    it.only('should call articlesService.publishArticle with the correct tagList', (done) => {
-        // Given
-        const action = articleEditActions.publishArticle();
-        const inputState = {
-            ngrxForms: {
-                data: {
-                    tagList: 'coding, testing'
-                }
-            }
-        };
+    effects = TestBed.inject(ArticleEditEffects);
+    mockStore = TestBed.inject(MockStore);
+    actions$ = new ReplaySubject(1);
+  });
 
-        mockStore.setState(inputState);
+  it.only('should call articlesService.publishArticle with the correct tagList', (done) => {
+    // Given
+    const action = articleEditActions.publishArticle();
+    const inputState = {
+      ngrxForms: {
+        data: {
+          tagList: 'coding, testing',
+        },
+      },
+    };
 
-        const expectedArticle = {
-            tagList: ['coding', 'testing']
-        } as Article;
+    mockStore.setState(inputState);
 
-        // stub the publish response
-        mockArticlesService.publishArticle.mockReturnValue(of({ article: expectedArticle }));
+    const expectedArticle = {
+      tagList: ['coding', 'testing'],
+    } as Article;
 
-        // Invoke the effect function, then call `action$.next()` below
-        const observableResult = effects.publishArticle$(actions$.asObservable(),
-                                                                                    mockArticlesService,
-                                                                                    mockStore,
-                                                                                    mockRouter);
+    // stub the publish response
+    mockArticlesService.publishArticle.mockReturnValue(of({ article: expectedArticle }));
 
-        observableResult.subscribe(() => {
-            // Then
-            expect(mockArticlesService.publishArticle).toHaveBeenCalledWith(expectedArticle);
-            done();
-        });
+    // Invoke the effect function, then call `action$.next()` below
+    const observableResult = effects.publishArticle$(
+      actions$.asObservable(),
+      mockArticlesService,
+      mockStore,
+      mockRouter,
+    );
 
-        // When (after invoking above)
-        actions$.next(action);
+    observableResult.subscribe(() => {
+      // Then
+      expect(mockArticlesService.publishArticle).toHaveBeenCalledWith(expectedArticle);
+      done();
     });
+
+    // When (after invoking above)
+    actions$.next(action);
+  });
 });

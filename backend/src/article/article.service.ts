@@ -31,6 +31,7 @@ export class ArticleService {
       .createQueryBuilder('a')
       .select('a.*')
       .leftJoin('a.author', 'u')
+      .leftJoinAndSelect('a.authors', 'authors')
       .leftJoinAndSelect('a.tags', 't');
 
     if ('tag' in query) {
@@ -95,7 +96,7 @@ export class ArticleService {
   async findFeed(userId: number, query): Promise<IArticlesRO> {
     const user = userId ? await this.userRepository.findOne(userId, { populate: ['followers', 'favorites'] }) : undefined;
     const res = await this.articleRepository.findAndCount({ author: { followers: userId } }, {
-      populate: ['author'],
+      populate: ['author', 'authors'],
       orderBy: { createdAt: QueryOrder.DESC },
       limit: query.limit,
       offset: query.offset,
@@ -104,14 +105,14 @@ export class ArticleService {
     return { articles: res[0].map(a => this.mapToDto(a, user)), articlesCount: res[1] };
   }
 
-  async findOne(userId: number, where): Promise<IArticleRO> {
+  async findOne(userId: number, where, ): Promise<IArticleRO> {
     const user = userId ? await this.userRepository.findOneOrFail(userId, { populate: ['followers', 'favorites'] }) : undefined;
-    const article = await this.articleRepository.findOne(where, { populate: ['author'] });
-    return { article: article && article.toJSON(user) };
+    const article = await this.articleRepository.findOne(where, { populate: ['author', 'authors'] });
+    return { article: article && this.mapToDto(article, user) };
   }
 
   async addComment(userId: number, slug: string, dto: CreateCommentDto) {
-    const article = await this.articleRepository.findOneOrFail({ slug }, { populate: ['author'] });
+    const article = await this.articleRepository.findOneOrFail({ slug }, { populate: ['author', 'authors'] });
     const author = await this.userRepository.findOneOrFail(userId);
     const comment = new Comment(author, article, dto.body);
     await this.em.persistAndFlush(comment);
@@ -120,7 +121,7 @@ export class ArticleService {
   }
 
   async deleteComment(userId: number, slug: string, id: number): Promise<IArticleRO> {
-    const article = await this.articleRepository.findOneOrFail({ slug }, { populate: ['author'] });
+    const article = await this.articleRepository.findOneOrFail({ slug }, { populate: ['author', 'authors'] });
     const user = await this.userRepository.findOneOrFail(userId);
     const comment = this.commentRepository.getReference(id);
 
@@ -133,7 +134,7 @@ export class ArticleService {
   }
 
   async favorite(id: number, slug: string): Promise<IArticleRO> {
-    const article = await this.articleRepository.findOneOrFail({ slug }, { populate: ['author'] });
+    const article = await this.articleRepository.findOneOrFail({ slug }, { populate: ['author', 'authors'] });
     const user = await this.userRepository.findOneOrFail(id, { populate: ['favorites', 'followers'] });
 
     if (!user.favorites.contains(article)) {
@@ -146,7 +147,7 @@ export class ArticleService {
   }
 
   async unFavorite(id: number, slug: string): Promise<IArticleRO> {
-    const article = await this.articleRepository.findOneOrFail({ slug }, { populate: ['author'] });
+    const article = await this.articleRepository.findOneOrFail({ slug }, { populate: ['author', 'authors'] });
     const user = await this.userRepository.findOneOrFail(id, { populate: ['followers', 'favorites'] });
 
     if (user.favorites.contains(article)) {
@@ -171,6 +172,12 @@ export class ArticleService {
     // article.tagList.push(...dto.tagList);
     article.tags.set(await this.updateTags(dto.tagList));
 
+    // Add authors by email
+    const authorEmails = [...new Set([...dto.authorEmails, user.email])];
+    const authors = await this.userRepository.find({ email: { $in: authorEmails } });
+    article.authors.set(authors);
+
+    // TODO: remove now that we have multiple authors
     user.articles.add(article);
     await this.em.flush();
 
@@ -182,10 +189,20 @@ export class ArticleService {
 
   async update(userId: number, slug: string, articleData: any): Promise<IArticleRO> {
     const user = await this.userRepository.findOne({ id: userId }, { populate: ['followers', 'favorites', 'articles'] });
-    const article = await this.articleRepository.findOne({ slug }, { populate: ['author'] });
+    const article = await this.articleRepository.findOne({ slug }, { populate: ['author', 'authors'] });
+
+    article.lockedBy = null;
+    article.lockedAt = null;
 
     // TODO: do we need to call updateTags() here also?
     wrap(article).assign(articleData);
+
+    // Update authors list to make sure current user is always in the list
+    // TODO: the front-end displays extra buttons etc for the primary author, so probably need to make sure that the primary author is not removed.
+    const authorEmails = [...new Set([...articleData.authorEmails, user.email])]; // add current user email if not already in the list
+    const authors = await this.userRepository.find({ email: { $in: authorEmails } });
+    article.authors.set(authors);
+
     await this.em.flush();
 
     return { article: article.toJSON(user) };

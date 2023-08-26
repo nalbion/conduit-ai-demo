@@ -19,10 +19,13 @@ export const publishArticle$ = createEffect(
       concatLatestFrom(() => store.select(ngrxFormsQuery.selectData)),
       concatMap(([_, data]) => {
         // Ensure tagList is an array of strings
-        const article =
-          data.tagList === undefined || data.tagList.constructor == Array
-            ? data
-            : { ...data, tagList: data.tagList.split(/, ?/g) };
+        const article = { ...data };
+        if (typeof data.tagList === 'string') {
+          article.tagList = data.tagList.split(/, */g);
+        }
+        if (typeof data.authorEmails === 'string') {
+          article.authorEmails = data.authorEmails.split(/, */g);
+        }
 
         return articlesService.publishArticle(article).pipe(
           tap((result) => router.navigate(['article', result.article.slug])),

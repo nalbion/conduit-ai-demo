@@ -45,11 +45,22 @@ export class Article {
   @ManyToOne()
   author: User;
 
+  @ManyToMany({ entity: () => User })
+  authors = new Collection<User>(this);
+
   @OneToMany(() => Comment, comment => comment.article, { eager: true, orphanRemoval: true })
   comments = new Collection<Comment>(this);
 
   @Property()
   favoritesCount = 0;
+
+  /** username of the user who has the lock */
+  @Property({ nullable: true })
+  lockedBy: string;
+
+  /** timestamp when the lock was acquired */
+  @Property({ nullable: true })
+  lockedAt: Date;
 
   constructor(author: User, title: string, description: string, body: string) {
     this.author = author;
@@ -64,6 +75,10 @@ export class Article {
     o.favorited = user && user.favorites.isInitialized() ? user.favorites.contains(this) : false;
     o.author = this.author.toJSON(user);
 
+    if (user && o.authors?.some(author => author.id === user.id) ) {
+      o.authorEmails = this.authors.getItems().map(author => author.email);
+    }
+
     return o;
   }
 
@@ -72,4 +87,5 @@ export class Article {
 export interface ArticleDTO extends EntityDTO<Article> {
   favorited?: boolean;
   tagList?: string[];
+  authorEmails?: string[];
 }

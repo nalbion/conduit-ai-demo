@@ -8,8 +8,8 @@ export class Migration20230825114637 extends Migration {
       SELECT
         u.id AS user_id,
         u.username,
-        COUNT(*) AS total_articles,
-        CAST(SUM(a.favorites_count) AS DECIMAL(32, 4)) AS total_likes,
+        IFNULL(COUNT(article.id), 0) AS total_articles,
+        CAST(IFNULL(SUM(article.favorites_count), 0) AS UNSIGNED INT) AS total_likes,
         MIN(a.created_at) AS first_article_date
       FROM user u
       LEFT JOIN article AS a 

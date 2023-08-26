@@ -26,7 +26,7 @@ export class ArticleListComponent {
     this.store.dispatch(articlesActions.favorite({ slug }));
   }
 
-  unFavorite(slug: string) {
+  unfavorite(slug: string) {
     this.store.dispatch(articlesActions.unfavorite({ slug }));
   }
 

@@ -17,7 +17,10 @@ export class CreateArticleDto {
   readonly body: string;
 
   @IsArray()
-  // @ArrayNotEmpty()
   @IsString({ each: true })
   readonly tagList: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  readonly authorEmails: string[];
 }

@@ -5,7 +5,6 @@ import {
   Entity, EntityDTO,
   EntityRepositoryType,
   ManyToMany,
-  OneToMany,
   PrimaryKey,
   Property,
   wrap,
@@ -46,7 +45,7 @@ export class User {
   @ManyToMany(() => User, u => u.followers, { hidden: true })
   followed = new Collection<User>(this);
 
-  @OneToMany(() => Article, article => article.author, { hidden: true })
+  @ManyToMany(() => Article, article => article.authors, { hidden: true, mappedBy: 'authors', owner: false })
   articles = new Collection<Article>(this);
 
   constructor(username: string, email: string, password: string) {
