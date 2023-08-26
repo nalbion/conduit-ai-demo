@@ -5,9 +5,11 @@ export const articleEditActions = createActionGroup({
   events: {
     publishArticle: emptyProps(),
     publishArticleSuccess: emptyProps(),
+
     lockArticle: props<{ slug: string }>(),
     lockArticleSuccess: emptyProps(),
     lockArticleFailure: props<{ error: any }>(),
+
     unlockArticle: props<{ slug: string }>(),
     unlockArticleSuccess: emptyProps(),
     unlockArticleFailure: props<{ error: any }>(),

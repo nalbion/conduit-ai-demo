@@ -4,10 +4,9 @@ import { OnDestroy } from '@angular/core';
 import { Validators } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Store } from '@ngrx/store';
-import { articleActions, articleEditActions, articleQuery } from '@realworld/articles/data-access';
-import { take, map } from 'rxjs';
-import {Profile} from "@realworld/core/api-types";
-import {JsonPipe} from "@angular/common";
+import { articleEditActions, articleQuery } from '@realworld/articles/data-access';
+import { take, tap, filter } from 'rxjs';
+import { JsonPipe } from '@angular/common';
 
 const structure: Field[] = [
   {
@@ -56,6 +55,7 @@ export class ArticleEditComponent implements OnInit, OnDestroy {
   data$ = this.store.select(ngrxFormsQuery.selectData);
   private lockTimeout: any;
 
+
   constructor(private readonly store: Store) {}
 
   ngOnInit() {
@@ -63,19 +63,14 @@ export class ArticleEditComponent implements OnInit, OnDestroy {
 
     this.store
       .select(articleQuery.selectData)
-      .pipe(untilDestroyed(this))
+      .pipe(
+          untilDestroyed(this),
+          filter(article => article && !!article.slug)
+      )
       .subscribe((article) => {
-        const data = article;
-        //     {
-        //   ...article,
-        //   authors: article.authors.map(author => author.email).join(', ')
-        // };
-        console.info('article', article);
-        // console.info('article data', data);
-        this.store.dispatch(formsActions.setData({ data }))
+        this.store.dispatch(formsActions.setData({ data: article }));
+        this.lockArticle(article.slug);
       });
-
-    this.lockArticle();
   }
 
   updateForm(changes: any) {
@@ -85,8 +80,6 @@ export class ArticleEditComponent implements OnInit, OnDestroy {
     //   alert("You cannot remove yourself from the authors' list.");
     //   return;
     // }
-
-    console.info('changes:', changes);
 
     this.store.dispatch(formsActions.updateData({ data: changes }));
   }
@@ -100,42 +93,26 @@ export class ArticleEditComponent implements OnInit, OnDestroy {
     this.store.dispatch(formsActions.initializeForm());
   }
 
-  lockArticle() {
-    // console.info('locking article, data:', this.data$.subscribe())
-    // const slug = this.route.snapshot.paramMap.get('slug');
-    // this.store.dispatch(articleEditActions.lockArticle({ slug }));
-
-    this.data$
-        .pipe(
-            take(1), // take the first emitted value and then complete
-            map(data => data.slug),
-        )
-        .subscribe(slug => {
-          this.store.dispatch(articleEditActions.lockArticle({ slug }));
-
-          // Start a timer to automatically unlock the article after 5 minutes
-          this.lockTimeout = setTimeout(() => this.unlockArticle(), 5 * 60 * 1000);
-        });
+  lockArticle(slug: string) {
+    this.store.dispatch(articleEditActions.lockArticle({slug}));
 
     // Start a timer to automatically unlock the article after 5 minutes
     this.lockTimeout = setTimeout(() => this.unlockArticle(), 5 * 60 * 1000);
   }
 
   unlockArticle() {
-    // const slug = this.route.snapshot.paramMap.get('slug');
-    // this.store.dispatch(articleEditActions.unlockArticle({ slug }));
-
     this.data$
-        .pipe(
-            take(1), // take the first emitted value and then complete
-            map(data => data.slug),
-        )
-        .subscribe(slug => {
-          this.store.dispatch(articleEditActions.unlockArticle({ slug }));
+      .pipe(
+        take(1), // take the first emitted value and then complete
+      )
+      .subscribe(({slug}) => {
+        if (slug) {
+          this.store.dispatch(articleEditActions.unlockArticle({slug}));
 
           // Clear the lock timeout
           clearTimeout(this.lockTimeout);
-        });
+        }
+      });
 
     clearTimeout(this.lockTimeout);
   }

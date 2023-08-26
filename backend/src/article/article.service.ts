@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {ForbiddenException, HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {EntityManager, QueryOrder, wrap} from '@mikro-orm/core';
 import {InjectRepository} from '@mikro-orm/nestjs'
 import {EntityRepository} from '@mikro-orm/mysql';
@@ -9,6 +9,7 @@ import {IArticleRO, IArticlesRO, ICommentsRO} from './article.interface';
 import {Comment} from './comment.entity';
 import {CreateArticleDto, CreateCommentDto} from './dto';
 import {Tag} from '../tag/tag.entity';
+import autoMockOff = jest.autoMockOff;
 
 @Injectable()
 export class ArticleService {
@@ -191,8 +192,16 @@ export class ArticleService {
     const user = await this.userRepository.findOne({ id: userId }, { populate: ['followers', 'favorites', 'articles'] });
     const article = await this.articleRepository.findOne({ slug }, { populate: ['author', 'authors'] });
 
-    article.lockedBy = null;
-    article.lockedAt = null;
+    // Don't allow updates while locked by another user.
+    if (article.lockedBy != user.username) {
+      const lockedAt = new Date(article.lockedAt).getTime();
+      if (Date.now() < lockedAt + 5 * 60000) {
+        throw new HttpException('Article is locked', HttpStatus.FORBIDDEN)
+      }
+    }
+
+    articleData.lockedBy = null;
+    articleData.lockedAt = null;
 
     // TODO: do we need to call updateTags() here also?
     wrap(article).assign(articleData);
@@ -225,6 +234,40 @@ export class ArticleService {
     // await this.tagRepository.persistAndFlush(newTagEntities);
 
     return [...tags, ...newTagEntities];
+  }
+
+  async lock(id: number, slug: string): Promise<IArticleRO> {
+    const article = await this.articleRepository.findOneOrFail({ slug }, { populate: ['author', 'authors'] });
+    const user = await this.userRepository.findOneOrFail(id);
+
+    // Check if the user is authorized to lock the article
+    if (!article.authors.getItems().some(a => a.id === user.id)) {
+      throw new ForbiddenException('You are not authorized to lock this article.');
+    }
+
+    // Lock the article
+    article.lockedBy = user.username;
+    article.lockedAt = new Date();
+
+    await this.em.flush();
+    return { article: article.toJSON(user) };
+  }
+
+  async unlock(id: number, slug: string): Promise<IArticleRO> {
+    const article = await this.articleRepository.findOneOrFail({ slug }, { populate: ['author', 'authors'] });
+    const user = await this.userRepository.findOneOrFail(id);
+
+    // Check if the user is authorized to unlock the article
+    if (!article.authors.getItems().some(a => a.id === user.id)) {
+      throw new ForbiddenException('You are not authorized to unlock this article.');
+    }
+
+    // Unlock the article
+    article.lockedBy = null;
+    article.lockedAt = null;
+
+    await this.em.flush();
+    return { article: article.toJSON(user) };
   }
 
 }

@@ -96,4 +96,20 @@ export class ArticleController {
     return this.articleService.unFavorite(userId, slug);
   }
 
+  @ApiOperation({ summary: 'Lock article' })
+  @ApiResponse({ status: 201, description: 'The article has been successfully locked.' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @Post(':slug/lock')
+  async lock(@User('id') userId: number, @Param('slug') slug) {
+    return this.articleService.lock(userId, slug);
+  }
+
+  @ApiOperation({ summary: 'Unlock article' })
+  @ApiResponse({ status: 201, description: 'The article has been successfully unlocked.' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @Post(':slug/unlock')
+  async unlock(@User('id') userId: number, @Param('slug') slug) {
+    return this.articleService.unlock(userId, slug);
+  }
+
 }

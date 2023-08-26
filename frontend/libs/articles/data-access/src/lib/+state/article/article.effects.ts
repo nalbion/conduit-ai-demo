@@ -85,7 +85,21 @@ export const loadArticle$ = createEffect(
       ofType(articleActions.loadArticle),
       concatMap((action) =>
         articlesService.getArticle(action.slug).pipe(
-          map((response) => articleActions.loadArticleSuccess({ article: response.article })),
+          map((response) => {
+              let { lockedAt } = response.article;
+
+              if (lockedAt) {
+                // TODO: timeout should be a shared constant that article-edit uses as well.
+                lockedAt = new Date(lockedAt).getTime();
+                if (Date.now() > lockedAt + 5 * 60000) {
+                    // Ignore the expired lock.
+                    // (the backend will still assert lock status on updates as user's clock may be wrong)
+                    response.article.lockedAt = 0;
+                    response.article.lockedBy = '';
+                }
+              }
+              return articleActions.loadArticleSuccess({ article: response.article })
+          }),
           catchError((error) => of(articleActions.loadArticleFailure(error))),
         ),
       ),

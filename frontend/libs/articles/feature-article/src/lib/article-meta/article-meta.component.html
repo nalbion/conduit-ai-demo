@@ -1,15 +1,15 @@
 <div class="article-meta">
   <ng-container *ngFor="let author of article.authors">
     <cdt-author-meta
-            [article]="article"
-            [author]="author"
-            [primary]="article.author.username == author.username"
-            [canModify]="canModify"
-            (follow)="onFollow($event)"
-            (unfollow)="unfollow($event)"
-            (favorite)="favorite($event)"
-            (unfavorite)="unfavorite($event)"
-            (delete)="delete($event)"
+      [article]="article"
+      [author]="author"
+      [primary]="article.author.username == author.username"
+      [canModify]="canModify"
+      (follow)="onFollow($event)"
+      (unfollow)="onUnfollow($event)"
+      (favorite)="onFavorite($event)"
+      (unfavorite)="onUnfavorite($event)"
+      (delete)="onDelete($event)"
     />
   </ng-container>
 </div>

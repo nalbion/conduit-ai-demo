@@ -13,7 +13,7 @@ export interface Article {
   author: Profile;
   authors: Profile[];
   authorEmails: string[];
-  lockedAt: Date;
+  lockedAt: number;
   lockedBy: string;
 }
 

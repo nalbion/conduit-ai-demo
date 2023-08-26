@@ -11,7 +11,7 @@ import { MarkdownPipe } from './pipes/markdown.pipe';
 import { ArticleCommentComponent } from './article-comment/article-comment.component';
 import { AddCommentComponent } from './add-comment/add-comment.component';
 import { Store } from '@ngrx/store';
-import {RouterLink} from "@angular/router";
+import { RouterLink } from '@angular/router';
 
 const structure: Field[] = [
   {
@@ -30,7 +30,7 @@ const structure: Field[] = [
   standalone: true,
   templateUrl: './article.component.html',
   styleUrls: ['./article.component.css'],
-    imports: [CommonModule, ArticleMetaComponent, ArticleCommentComponent, MarkdownPipe, AddCommentComponent, RouterLink],
+  imports: [CommonModule, ArticleMetaComponent, ArticleCommentComponent, MarkdownPipe, AddCommentComponent, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ArticleComponent implements OnInit, OnDestroy {
@@ -52,11 +52,11 @@ export class ArticleComponent implements OnInit, OnDestroy {
       .select(selectAuthState)
       .pipe(
         filter((auth) => auth.loggedIn),
-        (auth$) => combineLatest([auth$, this.store.select(articleQuery.getAuthorUsername)]),
+        (auth$) => combineLatest([auth$, this.store.select(articleQuery.getAuthorUsernames)]),
         untilDestroyed(this),
       )
-      .subscribe(([auth, username]) => {
-        this.canModify = auth.user.username === username;
+      .subscribe(([auth, authors]) => {
+        this.canModify = authors.includes(auth.user.username);
       });
   }
 

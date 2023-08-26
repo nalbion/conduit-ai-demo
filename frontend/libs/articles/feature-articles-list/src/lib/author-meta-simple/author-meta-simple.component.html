@@ -1,24 +1,24 @@
 <div class="article-meta" [routerLink]="['/profile', author.username]">
-    <a>
-        <img [src]="author.image" />
+  <a>
+    <img [src]="author.image" />
+  </a>
+  <div class="info">
+    <a data-e2e-id="article-author" class="author" [routerLink]="['/profile', author.username]">
+      {{ author.username }}
     </a>
-    <div class="info">
-        <a data-e2e-id="article-author" class="author" [routerLink]="['/profile', author.username]">
-            {{ author.username }}
-        </a>
-        <span class="date" [hidden]="!primary">
-          {{ article.createdAt | date : 'longDate' }}
-        </span>
-    </div>
-    <button
-            [ngClass]="{
+    <span class="date" [hidden]="!primary">
+      {{ article.createdAt | date : 'longDate' }}
+    </span>
+  </div>
+  <button
+    [ngClass]="{
       'btn-outline-primary': !article.favorited,
       'btn-primary': article.favorited
     }"
-            class="btn btn-sm pull-xs-right"
-            (click)="toggleFavorite(article)"
-    >
-        <i class="ion-heart"></i>
-        <div class="info">{{ article.favoritesCount }}</div>
-    </button>
+    class="btn btn-sm pull-xs-right"
+    (click)="toggleFavorite(article)"
+  >
+    <i class="ion-heart"></i>
+    <div class="info">{{ article.favoritesCount }}</div>
+  </button>
 </div>

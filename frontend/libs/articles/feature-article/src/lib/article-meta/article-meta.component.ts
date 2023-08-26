@@ -2,7 +2,7 @@ import { Component, Input, ChangeDetectionStrategy, EventEmitter, Output } from 
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Article } from '@realworld/core/api-types';
-import {AuthorMetaComponent} from "@realworld/articles/feature-article/src/lib/author-meta/author-meta.component";
+import { AuthorMetaComponent } from '@realworld/articles/feature-article/src/lib/author-meta/author-meta.component';
 @Component({
   selector: 'cdt-article-meta',
   standalone: true,

@@ -31,6 +31,8 @@ export const articleInitialState: ArticleState = {
     },
     authors: [],
     authorEmails: [],
+    lockedBy: '',
+    lockedAt: 0,
   },
   comments: [],
   loaded: false,
