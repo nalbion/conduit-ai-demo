@@ -1,4 +1,4 @@
-<div class="home-page">
+<div class="roster">
   <div class="banner">
     <div class="container">
       <h1 class="logo-font">Conduit Roster</h1>
@@ -18,10 +18,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let user of users">
-            <td><a [routerLink]="['/profile', user.username]">{{ user.username }}</a></td>
-            <td>{{ user.totalArticles }}</td>
-            <td>{{ user.totalLikes }}</td>
-            <td>{{ user.firstArticleDate || 'N/A' }}</td>
+            <td>
+              <a [routerLink]="['/profile', user.username]">{{ user.username }}</a>
+            </td>
+            <td class="numeric">{{ user.totalArticles }}</td>
+            <td class="numeric">{{ user.totalLikes }}</td>
+            <td class="numeric">{{ (user.firstArticleDate | date) || 'N/A' }}</td>
           </tr>
         </tbody>
       </table>

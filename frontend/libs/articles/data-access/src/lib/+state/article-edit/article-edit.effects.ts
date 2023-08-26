@@ -19,20 +19,31 @@ export const publishArticle$ = createEffect(
       concatLatestFrom(() => store.select(ngrxFormsQuery.selectData)),
       concatMap(([_, data]) => {
         // Ensure tagList is an array of strings
-        const article = (data.tagList === undefined || data.tagList.constructor == Array) ? data
+        const article =
+          data.tagList === undefined || data.tagList.constructor == Array
+            ? data
             : { ...data, tagList: data.tagList.split(/, ?/g) };
 
         return articlesService.publishArticle(article).pipe(
           tap((result) => router.navigate(['article', result.article.slug])),
           map(() => articleEditActions.publishArticleSuccess()),
-          catchError((result) => of(formsActions.setErrors({
-              errors: result.error.errors.reduce(
-                  (out: Record<string, string>, err: { detail: string, title: string, source: { pointer: string } }) => {
-                      const space = err.detail.indexOf(' ');
-                      out[err.detail.substring(0, space)] = err.detail.substring(space + 1);
-                      return out;
-                  }, {})
-          }))),
+          catchError((result) =>
+            of(
+              formsActions.setErrors({
+                errors: result.error.errors.reduce(
+                  (
+                    out: Record<string, string>,
+                    err: { detail: string; title: string; source: { pointer: string } },
+                  ) => {
+                    const space = err.detail.indexOf(' ');
+                    out[err.detail.substring(0, space)] = err.detail.substring(space + 1);
+                    return out;
+                  },
+                  {},
+                ),
+              }),
+            ),
+          ),
         );
       }),
     );

@@ -1,0 +1,11 @@
+.roster table {
+    margin: auto;
+}
+
+.roster th {
+    padding: .2rem 1rem;
+}
+
+.roster td.numeric {
+    text-align: center;
+}
