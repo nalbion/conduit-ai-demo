@@ -12,9 +12,7 @@
   </div>
 
   <span [hidden]="!primary || !canModify">
-    <span [hidden]="!article.lockedBy">
-      Locked by {{ article.lockedBy }}
-    </span>
+    <span [hidden]="!article.lockedBy"> Locked by {{ article.lockedBy }} </span>
     <span [hidden]="article.lockedBy">
       <a class="btn btn-sm btn-outline-secondary" [routerLink]="['/editor', article.slug]">
         <i class="ion-edit"></i> Edit Article

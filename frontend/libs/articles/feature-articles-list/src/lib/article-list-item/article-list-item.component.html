@@ -1,13 +1,24 @@
 <div class="article-preview">
-  <ng-container *ngFor="let author of article.authors">
+  <div class="author-list">
     <cdt-author-meta-simple
+      *ngFor="let author of article.authors"
       [article]="article"
       [author]="author"
       [primary]="article.author.username == author.username"
-      (favorite)="onFavorite($event)"
-      (unfavorite)="onUnfavorite($event)"
     ></cdt-author-meta-simple>
-  </ng-container>
+  </div>
+
+  <button
+    [ngClass]="{
+      'btn-outline-primary': !article.favorited,
+      'btn-primary': article.favorited
+    }"
+    class="btn btn-sm pull-xs-right"
+    (click)="toggleFavorite(article)"
+  >
+    <i class="ion-heart"></i>
+    <div class="info">{{ article.favoritesCount }}</div>
+  </button>
 
   <a (click)="navigateToArticle.emit(article.slug)" class="preview-link">
     <h1 data-e2e-id="article-list-title">{{ article.title }}</h1>

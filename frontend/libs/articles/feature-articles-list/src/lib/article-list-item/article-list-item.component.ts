@@ -19,11 +19,11 @@ export class ArticleListItemComponent {
   @Output() favorite: EventEmitter<string> = new EventEmitter();
   @Output() unfavorite: EventEmitter<string> = new EventEmitter();
 
-  onFavorite(slug: string) {
-    this.favorite.emit(slug);
-  }
-
-  onUnfavorite(slug: string) {
-    this.unfavorite.emit(slug);
+  toggleFavorite(article: Article) {
+    if (article.favorited) {
+      this.unfavorite.emit(article.slug);
+    } else {
+      this.favorite.emit(article.slug);
+    }
   }
 }

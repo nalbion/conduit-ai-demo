@@ -55,7 +55,6 @@ export class ArticleEditComponent implements OnInit, OnDestroy {
   data$ = this.store.select(ngrxFormsQuery.selectData);
   private lockTimeout: any;
 
-
   constructor(private readonly store: Store) {}
 
   ngOnInit() {
@@ -64,8 +63,8 @@ export class ArticleEditComponent implements OnInit, OnDestroy {
     this.store
       .select(articleQuery.selectData)
       .pipe(
-          untilDestroyed(this),
-          filter(article => article && !!article.slug)
+        untilDestroyed(this),
+        filter((article) => article && !!article.slug),
       )
       .subscribe((article) => {
         this.store.dispatch(formsActions.setData({ data: article }));
@@ -94,10 +93,12 @@ export class ArticleEditComponent implements OnInit, OnDestroy {
   }
 
   lockArticle(slug: string) {
-    this.store.dispatch(articleEditActions.lockArticle({slug}));
+    if (!this.lockTimeout) {
+      this.store.dispatch(articleEditActions.lockArticle({slug}));
 
-    // Start a timer to automatically unlock the article after 5 minutes
-    this.lockTimeout = setTimeout(() => this.unlockArticle(), 5 * 60 * 1000);
+      // Start a timer to automatically unlock the article after 5 minutes
+      this.lockTimeout = setTimeout(() => this.unlockArticle(), 5 * 60 * 1000);
+    }
   }
 
   unlockArticle() {
@@ -105,12 +106,12 @@ export class ArticleEditComponent implements OnInit, OnDestroy {
       .pipe(
         take(1), // take the first emitted value and then complete
       )
-      .subscribe(({slug}) => {
+      .subscribe(({ slug }) => {
         if (slug) {
-          this.store.dispatch(articleEditActions.unlockArticle({slug}));
+          this.store.dispatch(articleEditActions.unlockArticle({ slug }));
 
-          // Clear the lock timeout
           clearTimeout(this.lockTimeout);
+          this.lockTimeout = null;
         }
       });
 

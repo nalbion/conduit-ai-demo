@@ -55,41 +55,33 @@ export const publishArticle$ = createEffect(
 );
 
 export const lockArticle$ = createEffect(
-    (
-        actions$ = inject(Actions),
-        articlesService = inject(ArticlesService),
-        router = inject(Router),
-    ) => {
-        return actions$.pipe(
-            ofType(articleEditActions.lockArticle),
-            concatMap(action => {
-                const { slug } = action;
-                return articlesService.lockArticle(slug).pipe(
-                    map(() => articleEditActions.lockArticleSuccess()),
-                    catchError(error => of(articleEditActions.lockArticleFailure({ error })))
-                );
-            })
+  (actions$ = inject(Actions), articlesService = inject(ArticlesService), router = inject(Router)) => {
+    return actions$.pipe(
+      ofType(articleEditActions.lockArticle),
+      concatMap((action) => {
+        const { slug } = action;
+        return articlesService.lockArticle(slug).pipe(
+          map(() => articleEditActions.lockArticleSuccess()),
+          catchError((error) => of(articleEditActions.lockArticleFailure({ error }))),
         );
-    },
-    { functional: true },
+      }),
+    );
+  },
+  { functional: true },
 );
 
 export const unlockArticle$ = createEffect(
-    (
-        actions$ = inject(Actions),
-        articlesService = inject(ArticlesService),
-        router = inject(Router),
-    ) => {
-        return actions$.pipe(
-            ofType(articleEditActions.unlockArticle),
-            concatMap(action => {
-                const { slug } = action;
-                return articlesService.unlockArticle(slug).pipe(
-                    map(() => articleEditActions.unlockArticleSuccess()),
-                    catchError(error => of(articleEditActions.unlockArticleFailure({ error })))
-                );
-            })
+  (actions$ = inject(Actions), articlesService = inject(ArticlesService), router = inject(Router)) => {
+    return actions$.pipe(
+      ofType(articleEditActions.unlockArticle),
+      concatMap((action) => {
+        const { slug } = action;
+        return articlesService.unlockArticle(slug).pipe(
+          map(() => articleEditActions.unlockArticleSuccess()),
+          catchError((error) => of(articleEditActions.unlockArticleFailure({ error }))),
         );
-    },
-    { functional: true },
+      }),
+    );
+  },
+  { functional: true },
 );

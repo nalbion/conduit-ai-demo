@@ -1,0 +1,10 @@
+.author-list {
+    /*display: flex;*/
+    /*flex-direction: row;*/
+    display: inline-block;
+}
+
+cdt-author-meta-simple {
+    /*float: left;*/
+    display: inline-block;
+}
